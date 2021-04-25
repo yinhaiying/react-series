@@ -3,32 +3,19 @@ import ReactDOM from 'react-dom';  // DOM渲染库
 // import './index.css';
 // import App from './App';
 
-// const element = <h1 id="title">hello</h1>;
-// console.log(element)
-/*
-{
-  $$typeof: Symbol(react.element),
-  key: null,
-  props:{id: "title", children: "hello"},
-  ref:null,
-  type:"h1"
+
+
+
+
+function update() {
+  const element = <h1 id="title">
+    <p>hello</p>
+    ,{Date.now()}</h1>
+  ReactDOM.render(
+    element,
+    document.getElementById('root')
+  );
 }
 
-
-
-*/
-function createElement(type, config = {}, ...children) {
-  return {
-    $$typeof: Symbol("react.element"),
-    props: { ...config, children },
-    type
-  }
-}
-const element = createElement("h1", { id: "title" }, "hello")
-console.log(element)
-// ReactDOM.render(
-//   element,
-//   document.getElementById('root')
-// );
-
+setInterval(update, 1000)
 
