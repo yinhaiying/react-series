@@ -147,3 +147,72 @@ function update() {
   ReactDOM.render(element, document.getElementById("root"));
 }
 ```
+
+## 二. 组件和 Props
+
+1. 可以将 UI 切分成一些独立的，可复用的部件，这样就只需要专注于构建每一个单独的部件。
+2. 组件从概念上类似于 Javasript 函数，它接收任意的入参（即 props），并返回用于描述页面展示内容的元素。
+
+### 2.1 函数组件
+
+- 函数组件接收一个单一的 props 对象，并返回一个 React 元素
+
+```js
+function Greeting(props) {
+  // 接收props作为参数
+  return <h1>hello,{props.name}</h1>; // 返回一个React元素
+}
+```
+
+- 如何渲染函数组件
+
+1. 封装函数组件的属性对象 props = {name:"xxx"}
+2. 把 props 传递给`Greeting`函数。
+3. 把这个 React 这个元素，渲染到真实 DOM 上。
+
+```js
+function Greeting(props) {
+  return <h1>hello,{props.name}</h1>;
+}
+const element = <Greeting name="world" />;
+ReactDOM.render(element, document.getElementById("root"));
+```
+
+### 2.2 类组件
+
+- 类组件的 props 在 this 身上，需要一个 render 方法来返回一个 React 元素。
+
+```js
+class Welcome extends React.Component {
+  render() {
+    return <h1>hello,{this.props.name}</h1>;
+  }
+}
+
+let element = <Welcome name="title" />;
+```
+
+- 如何渲染类组件
+
+1. 封类组件的属性对象 props = {name:"xxx"}
+2. 创建`Welcome`的实例，`new Welcome(props)`;传递 props 进去，通过`this.props = props`，默认调用 super()即可;
+3. 调用实例的 render 方法，得到返回的 React 元素
+4. 将 React 元素，也就是虚拟 DOM 渲染到真实 DOM 上。
+
+```js
+class Welcome extends React.Component {
+  render() {
+    return <h1>hello,{this.props.name}</h1>;
+  }
+}
+
+let element = <Welcome name="title" />;
+ReactDOM.render(element, document.getElementById("root"));
+```
+
+### 2.3props
+
+1. props 是只读的。不管以何种方式声明组件（无论是函数组件还是类组件），都不可以修改 props。
+   类似于纯函数，不能改变输入的值，输入的值相同，那么输出的值必须相同。
+2. 对属性进行类型校验 static.propTypes
+3. 属性的默认值 static.defaultProps
