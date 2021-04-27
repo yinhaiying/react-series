@@ -27,7 +27,7 @@ class Component {
   }
   forceUpdate() {
     this.state = this.updateQueue.reduce((accumulate, current) => {
-      let nextState = typeof current === "function" ? current(this.state) : current;
+      let nextState = typeof current === "function" ? current(accumulate) : current;
       accumulate = { ...accumulate, ...nextState };
       return accumulate;
     }, this.state);

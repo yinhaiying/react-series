@@ -229,13 +229,13 @@ class Component {
   forceUpdate() {
     this.state = this.updateQueue.reduce((accumulate, current) => {
       let nextState =
-        typeof current === "function" ? current(this.state) : current;
+        typeof current === "function" ? current(accumulate) : current;
       accumulate = { ...accumulate, ...nextState };
       return accumulate;
     }, this.state);
     this.updateQueue.length = 0;
     // 修改状态后，更新组件
-    updateComponent(this);
+    // updateComponent(this);
   }
 }
 ```
@@ -255,5 +255,42 @@ export function updateComponent(componentInstance) {
   // 拿到之前的节点的父节点，将老的dom节点替换成新的dom节点。
   componentInstance.dom.parentNode.replaceChild(dom, componentInstance.dom); // 将老的DOM替换成新的DOM
   componentInstance.dom = dom;
+}
+```
+
+## 四.合成事件
+
+在事件处理函数前，要把批量更新模式设置为 true。这样的话在函数执行过程中，就不会直接更新状态和页面了，只会缓存局部状态到 updateQueue 里面。等事件处理函数结束后，才会实际进行更新。也就是说**合成事件的目的是为了实现批量更新**
+
+```js
+function addEvent(dom, eventType, listener, componentInstance) {
+  eventType = eventType.toLowerCase(); // onClick => onclick
+  dom.eventStore = dom.eventStore ? dom.eventStore : {};
+  dom.eventStore[eventType] = { listener, componentInstance }; // dom.eventStore.onclick = {}
+  // 把事件委托给document
+  document.addEventListener(eventType.slice(2), dispatchEvent, false);
+}
+
+function dispatchEvent(event) {
+  // event原生DOM事件
+
+  let { type, target } = event;
+  while (target) {
+    let { eventStore } = target;
+    if (eventStore) {
+      let { listener, componentInstance } = eventStore["on" + type]; // onclick
+      if (listener) {
+        if (componentInstance) {
+          componentInstance.isBatchUpdate = true;
+        }
+        listener.call(null, event);
+        if (componentInstance) {
+          componentInstance.isBatchUpdate = false;
+          componentInstance.forceUpdate();
+        }
+      }
+    }
+    target = target.parentNode;
+  }
 }
 ```
