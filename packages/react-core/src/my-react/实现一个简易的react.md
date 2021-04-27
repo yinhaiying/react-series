@@ -293,7 +293,9 @@ class Component {
 }
 ```
 
-## 四.合成事件
+## 四.事件
+
+### 4.1 合成事件
 
 在事件处理函数前，要把批量更新模式设置为 true。这样的话在函数执行过程中，就不会直接更新状态和页面了，只会缓存局部状态到 updateQueue 里面。等事件处理函数结束后，才会实际进行更新。也就是说**合成事件的目的是为了实现批量更新**
 
@@ -326,6 +328,129 @@ function dispatchEvent(event) {
       }
     }
     target = target.parentNode;
+  }
+}
+```
+
+### 4.2 事件中的 this 处理
+
+事件中的 this 处理，在 react 的事件中 this 应当指向组件的实例对象。有三种方式实现：
+
+1. 公共属性箭头函数，回调里的 this 指针永远指向实例。
+
+```js
+class Counter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: "counter",
+      number: 0,
+    };
+  }
+  handleClick = () => {
+    console.log(this); // this永远指向实例
+  };
+  render() {
+    return (
+      <div>
+        <h1>count:{this.state.number}</h1>
+        <button onClick={this.handleClick}>+</button>
+      </div>
+    );
+  }
+}
+```
+
+2. 匿名函数
+   由于使用了匿名函数，那么箭头函数的 this 就是`render`的 this。而`render`方法始终是组件的实例才能调用。
+
+```js
+class Counter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: "counter",
+      number: 0,
+    };
+  }
+  handleClick() {
+    console.log(this);
+  }
+  render() {
+    return (
+      <div>
+        <h1>count:{this.state.number}</h1>
+        <button
+          onClick={() => {
+            this.handleClick(); // 这里的this是render函数的this,而render函数都是组件实例在调用
+          }}
+        >
+          +
+        </button>
+      </div>
+    );
+  }
+}
+```
+
+3. 使用 bind 修改 this。
+   我们不知道调用时函数的 this 的指向，但是我们可以在`constructor`中指定函数的`this`指向，这样的话无论何时调用，
+   都是我们指定的 this 指向。
+
+```js
+class Counter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: "counter",
+      number: 0,
+    };
+    this.handleClick = this.handleClick.bind(this);
+  }
+  handleClick() {
+    console.log(this);
+  }
+  render() {
+    return (
+      <div>
+        <h1>count:{this.state.number}</h1>
+        <button onClick={this.handleClick}>+</button>
+      </div>
+    );
+  }
+}
+```
+
+### 4.3 事件中的参数传递
+
+由于事件的函数不能立即执行，因此我们无法直接给函数添加参数，我们需要在事件函数外面包裹一个函数，用于接收参数。
+
+```js
+class Counter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: "counter",
+      number: 0,
+    };
+    this.handleClick = this.handleClick.bind(this);
+  }
+  handleClick = (event, num) => {
+    this.setState({ number: this.state.number + num });
+  };
+  render() {
+    return (
+      <div>
+        <h1>count:{this.state.number}</h1>
+        <button
+          onClick={(event) => {
+            this.handleClick(event, 2);
+          }}
+        >
+          +
+        </button>
+      </div>
+    );
   }
 }
 ```

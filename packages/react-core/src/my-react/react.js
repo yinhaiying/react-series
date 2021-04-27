@@ -22,7 +22,7 @@ class Component {
   }
   setState(partialState, callback) {
     this.updateQueue.push(partialState);
-    this.callbacks.push(callback);
+    callback && this.callbacks.push(callback);
     if (!this.isBatchUpdate) {  // 如果当前不是处于批量更新模式，则直接更新
       this.forceUpdate();
     }
