@@ -1,5 +1,9 @@
-function createElement(type, config = {}, ...children) {
+// import { updateComponent } from "./react-dom.js";
+
+export function createElement(type, config = {}, ...children) {
+  console.log("这里执行了吗")
   let props = { ...config, children }
+  console.log("children111:", children)
   return {
     type,
     props
@@ -16,14 +20,30 @@ class Component {
   static isReactComponent = true;
   constructor(props) {
     this.props = props;
+    this.updateQueue = [];  // 存放临时的更新队列
+    this.isBatchUpdate = false;  // 当前是否处于批量更新模式
   }
-  setState(partilState) {
-
+  setState(partialState) {
+    this.updateQueue.push(partialState);
+    if (!this.isBatchUpdate) {  // 如果当前不是处于批量更新模式，则直接更新
+      this.forceUpdate();
+    }
+  }
+  forceUpdate() {
+    this.state = this.updateQueue.reduce((accumulate, current) => {
+      let nextState = typeof current === "function" ? current(this.state) : current;
+      accumulate = { ...accumulate, ...nextState };
+      return accumulate;
+    }, this.state);
+    this.updateQueue.length = 0;
+    // 修改状态后，更新组件
+    // updateComponent(this);
   }
 }
 
-
-export default {
+const React = {
   createElement,
   Component
 }
+
+export default React

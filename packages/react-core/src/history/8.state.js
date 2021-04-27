@@ -16,20 +16,14 @@ class Counter extends React.Component {
     // console.log("第一次更新：", this.state.number)
     // this.setState({ number: this.state.number + 1 });
     // console.log("第二次更新：", this.state.number)
-    this.setState((prevState) => {
-      let number = prevState.number + 1;
-      console.log(this.state.number);
-      return {
-        number
-      }
-    })
-    this.setState((prevState) => {
-      let number = prevState.number + 1;
-      console.log(this.state.number);
-      return {
-        number
-      }
-    })
+    this.setState({ number: this.state.number + 1 }, () => {
+      console.log("最终获取的值:", this.state.number)
+    });
+    console.log("第一次更新：", this.state.number)
+    this.setState({ number: this.state.number + 1 }, () => {
+      console.log("最终获取的值:", this.state.number)
+    });
+    console.log("第二次更新：", this.state.number)
   }
   render() {
     return (

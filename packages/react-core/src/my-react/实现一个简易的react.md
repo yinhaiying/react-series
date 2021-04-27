@@ -206,5 +206,54 @@ class Clock extends React.Component {
 3. setState 的更新可能是异步的。
    在事件处理函数中，调用`setState`并不会直接修改状态，而是先把`partialState`放入一个数组缓存起来，等事件执行结束后再统一更新。
 
+### 3.2 state 的简单实现
+
+1. 修改 state
+   修改 state 主要是判断是否有批量，如果没有批量，那么直接操作得到新的 state 并合并之前的 state。
+
 ```js
+class Component {
+  static isReactComponent = true;
+  constructor(props) {
+    this.props = props;
+    this.updateQueue = []; // 存放临时的更新队列
+    this.isBatchUpdate = false; // 当前是否处于批量更新模式
+  }
+  setState(partialState) {
+    this.updateQueue.push(partialState);
+    if (!this.isBatchUpdate) {
+      // 如果当前不是处于批量更新模式，则直接更新
+      this.forceUpdate();
+    }
+  }
+  forceUpdate() {
+    this.state = this.updateQueue.reduce((accumulate, current) => {
+      let nextState =
+        typeof current === "function" ? current(this.state) : current;
+      accumulate = { ...accumulate, ...nextState };
+      return accumulate;
+    }, this.state);
+    this.updateQueue.length = 0;
+    // 修改状态后，更新组件
+    updateComponent(this);
+  }
+}
+```
+
+2. 更新视图
+   `setState`不仅能够修改`state`，还能更新视图，更新视图的步骤如下：
+
+- 根据新额 state 得到新的虚拟 DOM，也就是调用 render 方法
+- 根据新的虚拟 DOM，渲染新的真实 DOM
+- 用新的真实 DOM，替换原来的 DOM
+
+```js
+export function updateComponent(componentInstance) {
+  let element = componentInstance.render(); // 根据新的props和state得到新的虚拟DOM。
+  let { type, props } = element;
+  let dom = createDom(type, props); // 根据新的虚拟DOM，创建新的真实DOM。
+  // 拿到之前的节点的父节点，将老的dom节点替换成新的dom节点。
+  componentInstance.dom.parentNode.replaceChild(dom, componentInstance.dom); // 将老的DOM替换成新的DOM
+  componentInstance.dom = dom;
+}
 ```
