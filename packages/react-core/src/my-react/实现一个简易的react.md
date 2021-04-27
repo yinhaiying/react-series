@@ -162,3 +162,49 @@ function render(element, container) {
   container.appendChild(dom);
 }
 ```
+
+## 三.实现 state
+
+### 3.1 React 中 state 的使用
+
+我们首先看下 state 的使用情况：
+
+```js
+class Clock extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      date: new Date(),
+    };
+  }
+  componentDidMount() {
+    // 组件挂载完成
+    this.timer = setInterval(() => {
+      this.setState({ date: new Date() });
+    }, 1000);
+  }
+  render() {
+    return (
+      <div>
+        <h1>hello,state</h1>
+        <h2>当前的时间是：{this.state.date.toLocaleTimeString()}</h2>
+      </div>
+    );
+  }
+}
+```
+
+通过上面的代码，我们可以看到代码的核心是去实现`setState`方法，我们可以发现`setState`是在`this`身上，因此，这个方法是通过`React.component`继承来的。因此，我们接下来也需要在`React.component`身上实现`setState`方法。
+我们先确定一下 setState 的功能：
+
+1. setState 包含了刷新页面的操作，就是让真实 DOM 和虚拟 DOM 保持一致。因此，不要直接修改 state
+2. setState 的更新可能会被合并。也就是 `setState` 传入的对象会跟老的对象进行合并，并不会直接覆盖。
+   - 老的有新的有则更新
+   - 老的没有，新的没有则添加
+   - 老的有，新的没有则保留
+     也就是说 setState 只能添加和修改，不能删除
+3. setState 的更新可能是异步的。
+   在事件处理函数中，调用`setState`并不会直接修改状态，而是先把`partialState`放入一个数组缓存起来，等事件执行结束后再统一更新。
+
+```js
+```

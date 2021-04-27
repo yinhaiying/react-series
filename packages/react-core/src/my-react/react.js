@@ -17,6 +17,9 @@ class Component {
   constructor(props) {
     this.props = props;
   }
+  setState(partilState) {
+
+  }
 }
 
 

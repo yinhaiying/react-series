@@ -253,7 +253,8 @@ class Clock extends React.Component {
 }
 ```
 
-2. 修改状态，只能通过`setState`进行修改。
+2. 修改状态，只能通过`setState`进行修改，不能直接修改 state。因为`setState`是包含了更新 UI 的操作，不仅仅是
+   修改状态。
 
 ```js
 class Clock extends React.Component {
@@ -279,3 +280,60 @@ class Clock extends React.Component {
   }
 }
 ```
+
+3. setState 的更新可能是异步的。
+   在事件处理函数中，调用`setState`并不会直接修改状态，而是先把`partialState`放入一个数组缓存起来，等事件执行结束后再统一更新。
+
+```js
+class Counter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: "counter",
+      number: 0,
+    };
+  }
+  handleClick = () => {
+    this.setState({ number: this.state.number + 1 });
+    console.log("第一次更新：", this.state.number);
+    this.setState({ number: this.state.number + 1 });
+    console.log("第二次更新：", this.state.number);
+  };
+  render() {
+    return (
+      <div>
+        <h1>count:{this.state.number}</h1>
+        <button onClick={this.handleClick}>+</button>
+      </div>
+    );
+  }
+}
+```
+
+我们发现每次点击时，两次更新输出的值是相同的。这是因为在事件处理函数中，在事件处理函数中，调用`setState`并不会直接修改状态，而是先把`partialState`放入一个数组缓存起来，等事件执行结束后再统一更新。比如这样：
+
+```js
+let updateQueue = [];
+updateQueue.push({ number: 1 });
+updateQueue.push({ number: 1 });
+this.state.number = 0; // 修改state.number
+this.state = { number: 0, name: "counte" };
+```
+
+我们可以看下，这样的话最终输出的都是最后的`number`。
+但是如果我们真的想要在事件函数中，获取到状态，那么在`setState`中传入一个回调函数。
+
+```js
+handleClick = () => {
+  this.setState({ number: this.state.number + 1 }, () => {
+    console.log("最终获取的值:", this.state.number);
+  });
+  console.log("第一次更新：", this.state.number);
+  this.setState({ number: this.state.number + 1 }, () => {
+    console.log("最终获取的值:", this.state.number);
+  });
+  console.log("第二次更新：", this.state.number);
+};
+```
+
+注意：回调函数会等所有的队列清空以后才会执行，也就是等所有的 `setState` 执行完毕，这样的话我们获取的一定是最终的 state。因此，如果想拿到最后的状态 state，就可以使用回调函数。
