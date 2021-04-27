@@ -210,9 +210,72 @@ let element = <Welcome name="title" />;
 ReactDOM.render(element, document.getElementById("root"));
 ```
 
-### 2.3props
+**为什么函数组件和类组件可以直接携程 JSX 形式了**
+函数组件和类组件之所以可以直接写成 JSX，如下所示：
+
+```js
+const element = <Greeting name="world" />; // 函数组件
+let element = <Welcome name="title" />; // 类组件
+```
+
+是因为实际上他们都是调用了`React.createElement`，这个方法会针对他们的`type`(即 createElement 的第一个参数)进行处理，返回相对应的虚拟 DOM。
+
+### 2.3 props
 
 1. props 是只读的。不管以何种方式声明组件（无论是函数组件还是类组件），都不可以修改 props。
    类似于纯函数，不能改变输入的值，输入的值相同，那么输出的值必须相同。
 2. 对属性进行类型校验 static.propTypes
 3. 属性的默认值 static.defaultProps
+
+### 2.4 state
+
+组件的状态：
+组件的数据源有两个一个是属性`props`，来自父组件，不可修改。另外一个是状态，是内部初始化的，改变状态的唯一方式是通过`setState`，是自己内部控制的。属性和状态都会影响，属性和状态的改变都会引起视图的变化。
+
+1. 只有在`constructor`中才可以给构造函数赋值。其他地方要改变`state`只能通过`setState`。
+
+```js
+class Clock extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      date: new Date(), //  只能在contructor中进行赋值
+    };
+  }
+  render() {
+    return (
+      <div>
+        <h1>hello,state</h1>
+        <h2>当前的时间是：{this.state.date.toLocalTimeString()}</h2>
+      </div>
+    );
+  }
+}
+```
+
+2. 修改状态，只能通过`setState`进行修改。
+
+```js
+class Clock extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      date: new Date(),
+    };
+  }
+  componentDidMount() {
+    // 组件挂载完成
+    this.timer = setInterval(() => {
+      this.setState({ date: new Date() });
+    }, 1000);
+  }
+  render() {
+    return (
+      <div>
+        <h1>hello,state</h1>
+        <h2>当前的时间是：{this.state.date.toLocaleTimeString()}</h2>
+      </div>
+    );
+  }
+}
+```
