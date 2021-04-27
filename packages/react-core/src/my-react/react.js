@@ -1,9 +1,7 @@
 // import { updateComponent } from "./react-dom.js";
 
 export function createElement(type, config = {}, ...children) {
-  console.log("这里执行了吗")
   let props = { ...config, children }
-  console.log("children111:", children)
   return {
     type,
     props
@@ -13,8 +11,6 @@ export function createElement(type, config = {}, ...children) {
 
 /*
 js中并没有类的概念，类编译之后也是一个函数，为了区分函数组件和类组件，使用静态属性isReactComponent
-
-
 */
 class Component {
   static isReactComponent = true;

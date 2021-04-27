@@ -1,7 +1,7 @@
 
 
 // 将element渲染到container中
-function render(element, container, componentInstance) {
+function render(element, container) {
   // 如果是字符串，说明是一个普通文本
   if (typeof element === "string" || typeof element === "number") {
     let dom = document.createTextNode(element);
@@ -11,6 +11,7 @@ function render(element, container, componentInstance) {
   let type = element.type;
   let props = element.props;
   let isReactComponent = type.isReactComponent;
+  let componentInstance;
   if (isReactComponent) {
     componentInstance = new type(props);
     element = componentInstance.render();
@@ -33,8 +34,12 @@ function createDom(type, props) {
   let dom = document.createElement(type);
   for (let propName in props) {   // 循环每一个属性
     if (propName === "children") {
-      console.log("props:", props)
-      props.children.forEach((child) => render(child, dom))
+      if (Array.isArray(props.children)) {
+        props.children.forEach((child) => render(child, dom))
+      } else {
+        render(props.children, dom)
+      }
+
     } else if (propName === "className") {
       dom.className = props[propName]
     } else if (propName === "style") {

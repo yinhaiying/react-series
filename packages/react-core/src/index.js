@@ -2,8 +2,6 @@
 // import ReactDOM from 'react-dom';  // DOM渲染库
 import React from './my-react/react';  // React核心库 提供react组件等
 import ReactDOM from './my-react/react-dom';  // DOM渲染库
-console.log("React:", React)
-console.log("ReactDOM:", ReactDOM)
 class Counter extends React.Component {
   constructor(props) {
     super(props);
@@ -36,7 +34,7 @@ class Counter extends React.Component {
   }
 }
 
-let element = <Counter name="1" />
+let element = React.createElement(Counter, {})
 
 console.log("111", element)
 
