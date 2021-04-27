@@ -258,6 +258,41 @@ export function updateComponent(componentInstance) {
 }
 ```
 
+### 3.3 state 的回调函数 callback 的实现
+
+```js
+class Component {
+  static isReactComponent = true;
+  constructor(props) {
+    this.props = props;
+    this.updateQueue = []; // 存放临时的更新队列
+    this.isBatchUpdate = false; // 当前是否处于批量更新模式
+    this.callbacks = []; // 收集setState的所有回调函数
+  }
+  setState(partialState, callback) {
+    this.updateQueue.push(partialState);
+    this.callbacks.push(callback);
+    if (!this.isBatchUpdate) {
+      // 如果当前不是处于批量更新模式，则直接更新
+      this.forceUpdate();
+    }
+  }
+  forceUpdate() {
+    this.state = this.updateQueue.reduce((accumulate, current) => {
+      let nextState =
+        typeof current === "function" ? current(accumulate) : current;
+      accumulate = { ...accumulate, ...nextState };
+      return accumulate;
+    }, this.state);
+    this.updateQueue.length = 0;
+    // 修改状态后，更新组件
+    // updateComponent(this);
+    this.callbacks.forEach((callback) => callback());
+    this.callbacks.length = 0;
+  }
+}
+```
+
 ## 四.合成事件
 
 在事件处理函数前，要把批量更新模式设置为 true。这样的话在函数执行过程中，就不会直接更新状态和页面了，只会缓存局部状态到 updateQueue 里面。等事件处理函数结束后，才会实际进行更新。也就是说**合成事件的目的是为了实现批量更新**

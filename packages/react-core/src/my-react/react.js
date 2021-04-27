@@ -18,11 +18,14 @@ class Component {
     this.props = props;
     this.updateQueue = [];  // 存放临时的更新队列
     this.isBatchUpdate = false;  // 当前是否处于批量更新模式
+    this.callbacks = [];   // 收集setState的所有回调函数
   }
-  setState(partialState) {
+  setState(partialState, callback) {
     this.updateQueue.push(partialState);
+    this.callbacks.push(callback);
     if (!this.isBatchUpdate) {  // 如果当前不是处于批量更新模式，则直接更新
       this.forceUpdate();
+
     }
   }
   forceUpdate() {
@@ -34,6 +37,8 @@ class Component {
     this.updateQueue.length = 0;
     // 修改状态后，更新组件
     // updateComponent(this);
+    this.callbacks.forEach((callback) => callback());
+    this.callbacks.length = 0;
   }
 }
 
