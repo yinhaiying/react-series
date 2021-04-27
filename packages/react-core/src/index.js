@@ -10,6 +10,13 @@ class Counter extends React.Component {
       number: 0
     }
   }
+  componentDidMount() {
+    setInterval(() => {
+      this.setState({ number: this.state.number + 1 }, () => {
+        console.log("mount:", this.state.number)
+      });
+    }, 1000)
+  }
   handleClick = () => {
     // this.setState({ number: this.state.number + 1 });
     // console.log("第一次更新：", this.state.number)

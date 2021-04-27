@@ -14,6 +14,11 @@ function render(element, container, componentInstance) {
   if (isReactComponent) {
     componentInstance = new type(props);
     element = componentInstance.render();
+
+    // 添加componentWillMount钩子函数的处理
+    if (componentInstance.componentWillMount) {
+      componentInstance.componentWillMount();
+    }
     type = element.type;     // 重新得到react元素的类型
     props = element.props;   // 重新得到react元素的属性
   } else if (typeof type === "function") {
@@ -26,7 +31,12 @@ function render(element, container, componentInstance) {
     // 将类组件的实例的dom指向这个类组件创建出来的真实DOM。
     componentInstance.dom = dom;
   }
-  container.appendChild(dom)
+  container.appendChild(dom);
+  // 添加componentDidMount钩子
+  if (isReactComponent && componentInstance && componentInstance.componentDidMount) {
+    componentInstance.componentDidMount();
+  }
+
 }
 
 

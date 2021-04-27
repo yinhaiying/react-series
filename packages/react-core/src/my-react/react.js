@@ -1,4 +1,4 @@
-// import { updateComponent } from "./react-dom.js";
+import { updateComponent } from "./react-dom.js";
 
 export function createElement(type, config = {}, ...children) {
   let props = { ...config, children }
@@ -25,7 +25,6 @@ class Component {
     this.callbacks.push(callback);
     if (!this.isBatchUpdate) {  // 如果当前不是处于批量更新模式，则直接更新
       this.forceUpdate();
-
     }
   }
   forceUpdate() {
@@ -36,7 +35,7 @@ class Component {
     }, this.state);
     this.updateQueue.length = 0;
     // 修改状态后，更新组件
-    // updateComponent(this);
+    updateComponent(this);
     this.callbacks.forEach((callback) => callback());
     this.callbacks.length = 0;
   }
