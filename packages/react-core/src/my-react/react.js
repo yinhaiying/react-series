@@ -19,6 +19,7 @@ class Component {
     this.updateQueue = [];  // 存放临时的更新队列
     this.isBatchUpdate = false;  // 当前是否处于批量更新模式
     this.callbacks = [];   // 收集setState的所有回调函数
+    this.refs = {};
   }
   setState(partialState, callback) {
     this.updateQueue.push(partialState);
@@ -28,6 +29,7 @@ class Component {
     }
   }
   forceUpdate() {
+    if (this.updateQueue.length === 0) return;
     this.state = this.updateQueue.reduce((accumulate, current) => {
       let nextState = typeof current === "function" ? current(accumulate) : current;
       accumulate = { ...accumulate, ...nextState };
@@ -41,9 +43,17 @@ class Component {
   }
 }
 
+function createRef() {
+  return {
+    current: null
+  }
+}
+
+
 const React = {
   createElement,
-  Component
+  Component,
+  createRef
 }
 
 export default React

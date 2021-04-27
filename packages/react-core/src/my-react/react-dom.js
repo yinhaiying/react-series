@@ -13,6 +13,9 @@ function render(element, container, componentInstance) {
   let isReactComponent = type.isReactComponent;
   if (isReactComponent) {
     componentInstance = new type(props);
+    if (props.ref) {
+      props.ref.current = componentInstance;
+    }
     element = componentInstance.render();
 
     // 添加componentWillMount钩子函数的处理
@@ -105,6 +108,19 @@ function createDom(type, props, componentInstance) {
       dom.setAttribute(propName, props[propName])
     }
   }
+  // 处理ref
+  if (props.ref) {
+    if (typeof props.ref === "string") {
+      componentInstance.refs[props.ref] = dom;
+    } else if (typeof props.ref === "function") {
+      props.ref.call(componentInstance, dom)
+    } else if (typeof props.ref === "object") {
+      props.ref.current = dom;
+    }
+  }
+
+
+
   return dom;
 }
 

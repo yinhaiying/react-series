@@ -1,32 +1,34 @@
-// import React from 'react';  // React核心库 提供react组件等
-// import ReactDOM from 'react-dom';  // DOM渲染库
-import React from './my-react/react';  // React核心库 提供react组件等
-import ReactDOM from './my-react/react-dom';  // DOM渲染库
-class Counter extends React.Component {
+import React from 'react';  // React核心库 提供react组件等
+import ReactDOM from 'react-dom';  // DOM渲染库
+// import React from './my-react/react';  // React核心库 提供react组件等
+// import ReactDOM from './my-react/react-dom';  // DOM渲染库
+
+
+class Calculator extends React.Component {
   constructor(props) {
-    super(props);
-    this.state = {
-      name: "counter",
-      number: 0
-    }
-    this.handleClick = this.handleClick.bind(this);
+    super(props)
+    this.a = React.createRef();  // {current:null}
+    this.b = React.createRef();  // {current:null}
+    this.result = React.createRef();  // {current:null}
   }
-  handleClick = (event, num) => {
-    this.setState({ number: this.state.number + num })
+  handleAdd = (event) => {
+    let a = this.a.current.value;
+    let b = this.b.current.value;
+    this.result.current.value = parseInt(a) + parseInt(b);
   }
   render() {
     return (
       <div>
-        <h1>count:{this.state.number}</h1>
-        <button onClick={(event) => { this.handleClick(event, 2) }}>+</button>
+        <input ref={this.a} />+
+        <input ref={this.b} />
+        <button onClick={this.handleAdd}> = </button>
+        <input ref={this.result} />
       </div>
-    );
+    )
   }
 }
-
-let element = React.createElement(Counter, {})
-
-console.log("111", element)
+let element = <Calculator />;
+console.log("......", element)
 
 ReactDOM.render(
   element,

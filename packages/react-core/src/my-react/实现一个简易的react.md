@@ -504,3 +504,108 @@ function render(element, container, componentInstance) {
   }
 }
 ```
+
+## 六.ref
+
+`ref`即`reference`引用，它用于访问 react 中的 DOM 节点或者创建的组件实例。
+
+### 6.1 ref 的使用
+
+ref 可以是
+
+1. 字符串 this.refs = {key:value} key 是字符串，值就是这个虚拟 DOM 在浏览器中的真实 DOM。
+2. 函数
+
+```js
+class Calculator extends React.Component {
+  handleAdd = (event) => {
+    let a = this.a.value; // 使用时直接通过this.a进行获取即可。不需要再通过refs
+    let b = this.b.value;
+    this.refs.result.value = parseInt(a) + parseInt(b);
+  };
+  render() {
+    return (
+      <div>
+        <input ref={(node) => (this.a = node)} />+ // 是一个函数
+        <input ref={(node) => (this.a = node)} />
+        <button onClick={this.handleAdd}> = </button>
+        <input ref="result" />
+      </div>
+    );
+  }
+}
+```
+
+3. 对象(最常用)
+
+```js
+class Calculator extends React.Component {
+  constructor(props) {
+    super(props);
+    this.a = React.createRef(); // {current:null}
+    this.b = React.createRef(); // {current:null}
+    this.result = React.createRef(); // {current:null}
+  }
+  handleAdd = (event) => {
+    let a = this.a.current.value;
+    let b = this.b.current.value;
+    this.result.current.value = parseInt(a) + parseInt(b);
+  };
+  render() {
+    return (
+      <div>
+        <input ref={this.a} />+
+        <input ref={this.b} />
+        <button onClick={this.handleAdd}> = </button>
+        <input ref={this.result} />
+      </div>
+    );
+  }
+}
+```
+
+### 6.2 ref 的实现
+
+ref 的实现实际上就是在生成真实 DOM 之后，根据是否有 ref 属性，以及 ref 属性的类型做不同的操作
+
+```js
+function createDom(type, props, componentInstance) {
+  let dom = document.createElement(type);
+  for (let propName in props) {
+    // 循环每一个属性
+    if (propName === "children") {
+      if (Array.isArray(props.children)) {
+        props.children.forEach((child) =>
+          render(child, dom, componentInstance)
+        );
+      } else {
+        render(props.children, dom);
+      }
+    } else if (propName === "className") {
+      dom.className = props[propName];
+    } else if (propName === "style") {
+      let styleObj = props[propName];
+      for (let attr in styleObj) {
+        dom.style[attr] = styleObj[attr];
+      }
+    } else if (propName.startsWith("on")) {
+      // dom[propName.toLowerCase()] = props[propName];
+      // dom：绑定的真实DOM元素， propName:onclick listener:handleClick
+      addEvent(dom, propName, props[propName], componentInstance);
+    } else {
+      dom.setAttribute(propName, props[propName]);
+    }
+  }
+  // 处理ref
+  if (props.ref) {
+    if (typeof props.ref === "string") {
+      componentInstance.refs[props.ref] = dom;
+    } else if (typeof props.ref === "function") {
+      props.ref.call(componentInstance, dom);
+    } else if (typeof props.ref === "object") {
+      props.ref.current = dom;
+    }
+  }
+  return dom;
+}
+```
