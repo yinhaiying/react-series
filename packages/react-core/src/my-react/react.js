@@ -1,7 +1,12 @@
-export function createElement(type, config = {}, ...children) {
+function createElement(type, config = {}, ...children) {
+  let props = { ...config, children }
   return {
-    $$typeof: Symbol("react.element"),
-    props: { ...config, children },
-    type
+    type,
+    props
   }
+}
+
+
+export default {
+  createElement
 }
