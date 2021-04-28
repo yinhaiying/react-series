@@ -19,8 +19,8 @@ function render(element, container, componentInstance) {
     element = componentInstance.render();
 
     // 添加componentWillMount钩子函数的处理
-    if (componentInstance.componentWillMount) {
-      componentInstance.componentWillMount();
+    if (componentInstance.UNSAFE_componentWillMount) {
+      componentInstance.UNSAFE_componentWillMount();
     }
     type = element.type;     // 重新得到react元素的类型
     props = element.props;   // 重新得到react元素的属性
@@ -127,7 +127,6 @@ function createDom(type, props, componentInstance) {
 // 更新组件
 export function updateComponent(componentInstance) {
   let element = componentInstance.render();   // 根据新的props和state得到新的虚拟DOM。
-  console.log("element:1111:", element)
   let { type, props } = element;
   let dom = createDom(type, props, componentInstance);   // 根据新的虚拟DOM，创建新的真实DOM。
   // 拿到之前的节点的父节点，将老的dom节点替换成新的dom节点。

@@ -36,10 +36,24 @@ class Component {
       return accumulate;
     }, this.state);
     this.updateQueue.length = 0;
-    // 修改状态后，更新组件
-    updateComponent(this);
     this.callbacks.forEach((callback) => callback());
     this.callbacks.length = 0;
+    // 修改状态后，更新组件
+    // shouldComponentUpdate返回false不更新组件
+    if (this.shouldComponentUpdate && !this.shouldComponentUpdate(this.props, this.state)) {
+      return;
+    }
+    // 将要更新
+    if (this.UNSAFE_componentWillUpdate) {
+      this.UNSAFE_componentWillUpdate();
+    }
+    // 更新组件
+    updateComponent(this);
+    // 更新完成
+    if (this.componentDidUpdate) {
+      this.componentDidUpdate();
+    }
+
   }
 }
 

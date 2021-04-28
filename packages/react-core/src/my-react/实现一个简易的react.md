@@ -505,6 +505,40 @@ function render(element, container, componentInstance) {
 }
 ```
 
+### 5.2 Updation
+
+更新时的生命周期函数，都是在`forceUpdate`中实现。判断是否有对应的生命周期函数，如果有则执行，否则不执行。
+
+```js
+  forceUpdate() {
+    if (this.updateQueue.length === 0) return;
+    this.state = this.updateQueue.reduce((accumulate, current) => {
+      let nextState = typeof current === "function" ? current(accumulate) : current;
+      accumulate = { ...accumulate, ...nextState };
+      return accumulate;
+    }, this.state);
+    this.updateQueue.length = 0;
+    this.callbacks.forEach((callback) => callback());
+    this.callbacks.length = 0;
+    // 修改状态后，更新组件
+    // shouldComponentUpdate返回false不更新组件
+    if (this.shouldComponentUpdate && !this.shouldComponentUpdate(this.props, this.state)) {
+      return;
+    }
+    // 将要更新
+    if (this.UNSAFE_componentWillUpdate) {
+      this.UNSAFE_componentWillUpdate();
+    }
+    // 更新组件
+    updateComponent(this);
+    // 更新完成
+    if (this.componentDidUpdate) {
+      this.componentDidUpdate();
+    }
+
+  }
+```
+
 ## 六.ref
 
 `ref`即`reference`引用，它用于访问 react 中的 DOM 节点或者创建的组件实例。

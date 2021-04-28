@@ -606,3 +606,86 @@ function createDom(type, props, componentInstance) {
   return dom;
 }
 ```
+
+## 五.生命周期
+
+### 5.1 旧版本的生命周期
+
+![旧版本的生命周期图片](./src/imgs/旧版本生命周期.png)
+
+```js
+class Counter extends React.Component {
+  static defaultProps = {
+    name: "hello",
+  };
+  constructor(props) {
+    super();
+    this.props = props;
+    this.state = { number: 0 };
+    console.log("1:Counter constructor:构造函数");
+  }
+  handleClick = () => {
+    this.setState({ number: this.state.number + 1 });
+  };
+  UNSAFE_componentWillMount() {
+    console.log("2:Counter componentWillMmount:组件将要挂载");
+  }
+  render() {
+    console.log("3:Counter render:生成虚拟DOM");
+    return (
+      <div>
+        <p>Counter:{this.state.number}</p>
+        <button onClick={this.handleClick}>+</button>
+      </div>
+    );
+  }
+  componentDidMount() {
+    console.log("4:Counter componentDidMount:组件挂载完成");
+  }
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log("5:Counter shouleComponentUpdate，询问用户组件是否要更新");
+    return nextState.number % 2 === 0; // 偶数更新，奇数不更新
+  }
+  UNSAFE_componentWillUpdate() {
+    console.log("6:Counter componentWillUpdate:组件将要更新");
+  }
+  componentDidUpdate() {
+    console.log("7:Counter componentDidUpdate:组件更新完成");
+  }
+}
+```
+
+如上所示，react 的组件初始化会经历`initialization`,`Mounting`,`updation`和`Unmounting`四个阶段，每个阶段有对应的生命周期函数：
+
+1. `initialization` 组件初始化
+   组件初始化主要是设置`props`和`states`，所有的操作都是在 `constructor` 构造函数中执行。
+   因此，我们常见的设置`state`等都是在`constructor`中实现。
+
+2. `Mounting`组件的挂载。
+   组件的挂载实现的功能是，生成虚拟 DOM，然后创建真实 DOM，并挂载到页面中。它主要精力三个阶段。
+
+- UNSAFE_componentWillMount
+  组件生成虚拟 DOM 之前。一般很少操作，将要被废弃
+- render
+  `render`是生成虚拟 DOM，它并不仅仅在挂载阶段执行，在所有需要更新页面（创建和更新）都会执行。它的功能就是生虚拟 DOM。
+- componentDidMount
+  `componentDidMount`是组件挂载完成，这时候可以获取到真实 DOM 了，可以进行一些 DOM 操作了。
+
+3. Updation 更新
+   当页面创建完成之后，如果页面数据发生变化`props`或者`state`发生了变化，那么就需要更新数据。无论是`props`还是`state`的变化，都会触发页面的更新。它主要有以下几个钩子。
+
+- shouldComponentUpdate
+  `shouldComponentUpdate`用于用户自定义是否更新，返回 true 才会触发更新，否则不会发生更新。
+- UNSAFE_componentWillUpdate （不常用）
+  `UNSAFE_componentWillUpdate`用于在更新前进行一些操作，使用少，将要被废弃。
+- render
+  `render`在创建和更新阶段都会执行
+- componentDidUpdate
+  `componentDidUpdate`表示更新完成。
+- componentWillReceiveProps（不常用）
+  `componentWillReceiveProps`是父组件 props 发生更新，子组件会触发这个钩子。
+
+4. Unmounting 卸载
+
+- componentWillUnmount
+  `componentWillUnmount`是组件卸载时触发。

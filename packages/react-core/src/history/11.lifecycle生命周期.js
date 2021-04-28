@@ -1,9 +1,3 @@
-import React from 'react';  // React核心库 提供react组件等
-import ReactDOM from 'react-dom';  // DOM渲染库
-// import React from './my-react/react';  // React核心库 提供react组件等
-// import ReactDOM from './my-react/react-dom';  // DOM渲染库
-
-
 class Counter extends React.Component {
   static defaultProps = {
     name: "hello"
@@ -26,8 +20,6 @@ class Counter extends React.Component {
       <div>
         <p>Counter:{this.state.number}</p>
         <button onClick={this.handleClick}>+</button>
-        <hr />
-        {this.state.number < 3 ? <SubCounter count={this.state.number} /> : null}
       </div>
     )
   }
@@ -46,27 +38,17 @@ class Counter extends React.Component {
   }
 }
 
-class SubCounter extends React.Component {
-  // 当父组件将要传递给子组件新的属性时
-  UNSAFE_componentWillReceiveProps() {
-    console.log("1:SubCount:componentWillReceiveProps")
-  }
-  render() {
-    console.log("2:SubCounter:render")
-    return (
-      <div>
-        <p>SubCount:{this.props.count}</p>
-      </div>
-    )
-  }
-  componentWillUnmount() {
-    console.log("3:SubCounter:componentWillUnmount 组件将要销毁")
-  }
-}
-ReactDOM.render(
-  <Counter />,
-  document.getElementById('root')
-);
+
+/*
+
+1:Counter constructor:构造函数
+index.js:21 2:Counter componentWillMmount:组件将要挂载
+index.js:24 3:Counter render:生成虚拟DOM
+index.js:33 4:Counter componentDidMount:组件挂载完成
+2index.js:36 5:Counter shouleComponentUpdate，询问用户组件是否要更新
+index.js:40 6:Counter componentWillUpdate:组件将要更新
+index.js:24 3:Counter render:生成虚拟DOM
+index.js:43 7:Counter componentDidUpdate:组件更新完成
 
 
-
+*/
