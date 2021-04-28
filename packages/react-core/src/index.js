@@ -1,25 +1,13 @@
-import React from 'react';  // React核心库 提供react组件等
-import ReactDOM from 'react-dom';  // DOM渲染库
-// import React from './my-react/react';  // React核心库 提供react组件等
-// import ReactDOM from './my-react/react-dom';  // DOM渲染库
+// import React from 'react';  // React核心库 提供react组件等
+// import ReactDOM from 'react-dom';  // DOM渲染库
+import React from './my-react/react';  // React核心库 提供react组件等
+import ReactDOM from './my-react/react-dom';  // DOM渲染库
 
 
-// let ThemeContext = React.createContext();  // ThemeContext = {Provider,Consumer}
+let ThemeContext = React.createContext();  // ThemeContext = {Provider,Consumer}
 
-function createContext() {
-  function Provider(props) {
-    Provider.value = props.value;
-    return props.children;  // 直接渲染儿子，只是用于缓存value
-  }
-  function Consumer(props) {
-    return props.children(Provider.value)
-  }
-  return {
-    Provider,
-    Consumer
-  }
-}
-let ThemeContext = createContext()
+
+// let ThemeContext = createContext()
 class Page extends React.Component {
   constructor(props) {
     super(props);

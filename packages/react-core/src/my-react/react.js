@@ -69,10 +69,11 @@ function createRef() {
 function createContext() {
   function Provider(props) {
     Provider.value = props.value;
-    return props.children;  // 直接渲染儿子，只是用于缓存value
+    return Array.isArray(props.children) ? props.children[0] : props.children;  // 直接渲染儿子，只是用于缓存value
   }
   function Consumer(props) {
-    return props.children(Provider.value)
+    let children = Array.isArray(props.children) ? props.children[0] : props.children;
+    return children(Provider.value)
   }
   return {
     Provider,

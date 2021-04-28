@@ -16,8 +16,13 @@ function render(element, container, componentInstance) {
     if (props.ref) {
       props.ref.current = componentInstance;
     }
-    element = componentInstance.render();
 
+    if(type.contextType){
+      componentInstance.context = type.contextType.Provider.value;
+    }
+
+    element = componentInstance.render();
+    element = Array.isArray(element) ? element[0] : element;
     // 添加componentWillMount钩子函数的处理
     if (componentInstance.UNSAFE_componentWillMount) {
       componentInstance.UNSAFE_componentWillMount();
@@ -26,11 +31,20 @@ function render(element, container, componentInstance) {
     props = element.props;   // 重新得到react元素的属性
   } else if (typeof type === "function") {
     element = type(props);   // 函数组件执行后悔返回一个react元素
+    element = Array.isArray(element) ? element[0] : element;
     type = element.type;     // 重新得到react元素的类型
     props = element.props;   // 重新得到react元素的属性
   }
+  // 如果说类组件渲染出来的element的类型也有isReactComponent属性，说明又是一个类组件
+  // 不能直接创建DOM，
+  if (typeof type === "function") {
+    return render(element, container, componentInstance)
+  }
+
+
+
   let dom = createDom(type, props, componentInstance);
-  if (isReactComponent && componentInstance) {
+  if (componentInstance) {
     // 将类组件的实例的dom指向这个类组件创建出来的真实DOM。
     componentInstance.dom = dom;
   }
@@ -84,6 +98,7 @@ function dispatchEvent(event) {  // event原生DOM事件
 
 
 function createDom(type, props, componentInstance) {
+  console.log("111:", type)
   let dom = document.createElement(type);
   for (let propName in props) {   // 循环每一个属性
     if (propName === "children") {
@@ -109,7 +124,7 @@ function createDom(type, props, componentInstance) {
     }
   }
   // 处理ref
-  if (props.ref) {
+  if (props && props.ref) {
     if (typeof props.ref === "string") {
       componentInstance.refs[props.ref] = dom;
     } else if (typeof props.ref === "function") {
@@ -118,16 +133,37 @@ function createDom(type, props, componentInstance) {
       props.ref.current = dom;
     }
   }
-
-
-
   return dom;
 }
 
 // 更新组件
 export function updateComponent(componentInstance) {
   let element = componentInstance.render();   // 根据新的props和state得到新的虚拟DOM。
+  element = Array.isArray(element) ? element[0] : element;
   let { type, props } = element;
+  while (typeof type === "function") {
+    let isReactComponent = type.isReactComponent;
+    if (isReactComponent) {
+      componentInstance = new type(props);
+      if (props.ref) {
+        props.ref.current = componentInstance;
+      }
+      element = componentInstance.render();
+      element = Array.isArray(element) ? element[0] : element;
+      // 添加componentWillMount钩子函数的处理
+      if (componentInstance.UNSAFE_componentWillMount) {
+        componentInstance.UNSAFE_componentWillMount();
+      }
+      type = element.type;     // 重新得到react元素的类型
+      props = element.props;   // 重新得到react元素的属性
+    } else if (typeof type === "function") {
+      element = type(props);   // 函数组件执行后悔返回一个react元素
+      element = Array.isArray(element) ? element[0] : element;
+      type = element.type;     // 重新得到react元素的类型
+      props = element.props;   // 重新得到react元素的属性
+    }
+  }
+
   let dom = createDom(type, props, componentInstance);   // 根据新的虚拟DOM，创建新的真实DOM。
   // 拿到之前的节点的父节点，将老的dom节点替换成新的dom节点。
   componentInstance.dom.parentNode.replaceChild(dom, componentInstance.dom)  // 将老的DOM替换成新的DOM
