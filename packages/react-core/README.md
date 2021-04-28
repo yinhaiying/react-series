@@ -735,3 +735,109 @@ class SubCounter extends React.Component {
 `getDerivedStateFromProps`返回一个对象，对象的属性是新的`state`中的`n`。<br/>
 **getSnapshotBeforeUpdate**
 `getSnapshotBeforeUpdate`被调用于 render 之后，可以读取但是无法使用 DOM 的时候，它使您的组件在可能更改之前从 DOM 捕获一些信息（例如滚动位置）。此生命周期返回的任何值都将作为参数传递给`componentDidUpdate`
+
+- 在某些场景下，想要在整个组件数中传递数据，但是不想手动地每一层传递数据，可以直接在 react 中使用强大的`Context`实现该功能。
+- 在一个典型的 react 应用中，数据是通过 props 属性，自上而下（自父及子）进行传递的，但是这种做法对于某些类型的属性而言是及其繁琐的（例如地区偏好），这些属性是应用程序中许多组件都需要的。`Context`提供了一种在组件之间共享此值的方式，而不必显示地在所有组件中逐层进行 props 传递。
+  因此，`Context`主要解决传递深和传递多的问题。
+
+### 6.1 Context 的使用
+
+1. 创建 context 实例对象
+
+```js
+let ThemeContext = React.createContext(); // ThemeContext = {Provider,Consumer}
+```
+
+这个对象中有两个属性`Provider`和`Consumber`。其中`Provider`是用于包裹最顶层提供属性的组件。
+
+2. 使用`ThemeContext.Provider`作为顶层容器，并将需要传递的值通过`value`属性进行传递
+
+```js
+  render() {
+    let value = { color: this.state.color, changeColor: this.changeColor };
+    return (
+      <ThemeContext.Provider value={value}>
+        <div style={{ width: "200px", margin: "10px", padding: "5px", border: `5px solid red` }}>
+          Page
+        <Header />
+          <Main />
+        </div>
+      </ThemeContext.Provider>
+    )
+  }
+```
+
+3. 孙子组件中如何接收`value`。
+   - 如果是类组件：给孙子组件添加一个静态属性`contextType`（必须是这个静态属性），指向创建的上下文`ThemeContext`，然后这个组件实例身上会多一个 this.context = Provier 中的 value。我们只需要通过`this.context`来使用`value`中的值即可。
+
+```js
+class Content extends React.Component {
+  static contextType = ThemeContext;
+  render() {
+    return (
+      <div
+        style={{
+          margin: "10px",
+          padding: "5px",
+          border: `5px solid ${this.context.color}`,
+        }}
+      >
+        content
+        <button
+          onClick={() => {
+            this.context.changeColor("red");
+          }}
+        >
+          红
+        </button>
+        <button
+          onClick={() => {
+            this.context.changeColor("green");
+          }}
+        >
+          绿
+        </button>
+      </div>
+    );
+  }
+}
+```
+
+- 如果是函数组件
+  函数组件需要返回一个`Context.Consumer`，它的 children 是一个函数，函数的参数就是`Provider`的 `value`属性，
+
+```js
+function Context2(props) {
+  return (
+    <ThemeContext.Consumer>
+      {(value) => {
+        return (
+          <div
+            style={{
+              margin: "10px",
+              padding: "5px",
+              border: `5px solid ${value.color}`,
+            }}
+          >
+            content
+            <button
+              onClick={() => {
+                value.changeColor("red");
+              }}
+            >
+              红
+            </button>
+            <button
+              onClick={() => {
+                value.changeColor("green");
+              }}
+            >
+              绿
+            </button>
+          </div>
+        );
+      }}
+    </ThemeContext.Consumer>
+  );
+}
+```
