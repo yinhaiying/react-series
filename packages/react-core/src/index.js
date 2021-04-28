@@ -4,7 +4,22 @@ import ReactDOM from 'react-dom';  // DOM渲染库
 // import ReactDOM from './my-react/react-dom';  // DOM渲染库
 
 
-let ThemeContext = React.createContext();  // ThemeContext = {Provider,Consumer}
+// let ThemeContext = React.createContext();  // ThemeContext = {Provider,Consumer}
+
+function createContext() {
+  function Provider(props) {
+    Provider.value = props.value;
+    return props.children;  // 直接渲染儿子，只是用于缓存value
+  }
+  function Consumer(props) {
+    return props.children(Provider.value)
+  }
+  return {
+    Provider,
+    Consumer
+  }
+}
+let ThemeContext = createContext()
 class Page extends React.Component {
   constructor(props) {
     super(props);
@@ -29,27 +44,43 @@ class Page extends React.Component {
   }
 }
 class Main extends React.Component {
-  static contextType = ThemeContext;
   render() {
     return (
-      <div style={{ margin: "10px", padding: "5px", border: `5px solid ${this.context.color}` }}>
-        main
-        <Content />
-        <Context2 />
-      </div>
+      <ThemeContext.Consumer>
+        {
+          (value) => {
+            return (
+              <div style={{ margin: "10px", padding: "5px", border: `5px solid ${value.color}` }}>
+                main
+                <Content />
+                <Context2 />
+              </div>
+            )
+          }
+        }
+      </ThemeContext.Consumer>
+
     )
   }
 }
 
 class Content extends React.Component {
-  static contextType = ThemeContext;
   render() {
     return (
-      <div style={{ margin: "10px", padding: "5px", border: `5px solid ${this.context.color}` }}>
-        content
-        <button onClick={() => { this.context.changeColor("red") }}>红</button>
-        <button onClick={() => { this.context.changeColor("green") }}>绿</button>
-      </div>
+      <ThemeContext.Consumer>
+        {
+          (value) => {
+            return (
+              <div style={{ margin: "10px", padding: "5px", border: `5px solid ${value.color}` }}>
+                content
+                <button onClick={() => { value.changeColor("red") }}>红</button>
+                <button onClick={() => { value.changeColor("green") }}>绿</button>
+              </div>
+            )
+          }
+        }
+      </ThemeContext.Consumer>
+
     )
   }
 }
@@ -73,21 +104,36 @@ function Context2(props) {
 }
 
 class Header extends React.Component {
-  static contextType = ThemeContext;
   render() {
     return (
-      <div style={{ margin: "10px", padding: "5px", border: `5px solid ${this.context.color}` }}>
-        header
-        <Title />
-      </div>
+      <ThemeContext.Consumer>
+        {
+          (value) => {
+            return (
+              <div style={{ margin: "10px", padding: "5px", border: `5px solid ${value.color}` }}>
+                header
+                <Title />
+              </div>
+            )
+          }
+        }
+      </ThemeContext.Consumer>
     )
   }
 }
 class Title extends React.Component {
-  static contextType = ThemeContext;
   render() {
     return (
-      <div style={{ margin: "10px", padding: "5px", border: `5px solid ${this.context.color}` }}>title</div>
+      <ThemeContext.Consumer>
+        {
+          (value) => {
+            return (
+              <div style={{ margin: "10px", padding: "5px", border: `5px solid ${value.color}` }}>title</div>
+            )
+          }
+        }
+      </ThemeContext.Consumer>
+
     )
   }
 }

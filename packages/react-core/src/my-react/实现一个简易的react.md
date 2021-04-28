@@ -643,3 +643,128 @@ function createDom(type, props, componentInstance) {
   return dom;
 }
 ```
+
+## 七. Context 上下文的实现
+
+### 7.1 Context 的使用
+
+1. 创建 context 实例对象
+
+```js
+let ThemeContext = React.createContext(); // ThemeContext = {Provider,Consumer}
+```
+
+这个对象中有两个属性`Provider`和`Consumber`。其中`Provider`是用于包裹最顶层提供属性的组件。
+
+2. 使用`ThemeContext.Provider`作为顶层容器，并将需要传递的值通过`value`属性进行传递
+
+```js
+  render() {
+    let value = { color: this.state.color, changeColor: this.changeColor };
+    return (
+      <ThemeContext.Provider value={value}>
+        <div style={{ width: "200px", margin: "10px", padding: "5px", border: `5px solid red` }}>
+          Page
+        <Header />
+          <Main />
+        </div>
+      </ThemeContext.Provider>
+    )
+  }
+```
+
+3. 孙子组件中如何接收`value`。
+   `Context.Consumer`，它的 children 是一个函数，函数的参数就是`Provider`的 `value`属性，
+
+```js
+function Context2(props) {
+  return (
+    <ThemeContext.Consumer>
+      {(value) => {
+        return (
+          <div
+            style={{
+              margin: "10px",
+              padding: "5px",
+              border: `5px solid ${value.color}`,
+            }}
+          >
+            content
+            <button
+              onClick={() => {
+                value.changeColor("red");
+              }}
+            >
+              红
+            </button>
+            <button
+              onClick={() => {
+                value.changeColor("green");
+              }}
+            >
+              绿
+            </button>
+          </div>
+        );
+      }}
+    </ThemeContext.Consumer>
+  );
+}
+```
+
+如果是类组件：还可以通过给孙子组件添加一个静态属性`contextType`（必须是这个静态属性），指向创建的上下文`ThemeContext`，然后这个组件实例身上会多一个 this.context = Provier 中的 value。我们只需要通过`this.context`来使用`value`中的值即可。
+
+```js
+class Content extends React.Component {
+  static contextType = ThemeContext;
+  render() {
+    return (
+      <div
+        style={{
+          margin: "10px",
+          padding: "5px",
+          border: `5px solid ${this.context.color}`,
+        }}
+      >
+        content
+        <button
+          onClick={() => {
+            this.context.changeColor("red");
+          }}
+        >
+          红
+        </button>
+        <button
+          onClick={() => {
+            this.context.changeColor("green");
+          }}
+        >
+          绿
+        </button>
+      </div>
+    );
+  }
+}
+```
+
+### 7.2 Context 的实现
+
+我们可以发现，实际上`Context`的实现就是用了一个缓存了一个公共的对象`value`，这个对象中有`Provider`和 `Consumer`两个组件，通过这两个组件来传递这个`value`，从而实现数据的共享。
+
+```js
+function createContext() {
+  function Provider(props) {
+    Provider.value = props.value;
+    return this.props.children; // 直接渲染儿子，只是用于缓存value
+  }
+  function Consumer(props) {
+    return props.children(Provider.value);
+  }
+  return {
+    Provider,
+    Consumer,
+  };
+}
+```
+
+如上所示，我们可以发现，我们定义了一个缓存变量`Provider.value`，当然我们也可以直接定义一个变量`value`来作为缓存。

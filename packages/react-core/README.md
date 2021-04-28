@@ -768,43 +768,7 @@ let ThemeContext = React.createContext(); // ThemeContext = {Provider,Consumer}
 ```
 
 3. 孙子组件中如何接收`value`。
-   - 如果是类组件：给孙子组件添加一个静态属性`contextType`（必须是这个静态属性），指向创建的上下文`ThemeContext`，然后这个组件实例身上会多一个 this.context = Provier 中的 value。我们只需要通过`this.context`来使用`value`中的值即可。
-
-```js
-class Content extends React.Component {
-  static contextType = ThemeContext;
-  render() {
-    return (
-      <div
-        style={{
-          margin: "10px",
-          padding: "5px",
-          border: `5px solid ${this.context.color}`,
-        }}
-      >
-        content
-        <button
-          onClick={() => {
-            this.context.changeColor("red");
-          }}
-        >
-          红
-        </button>
-        <button
-          onClick={() => {
-            this.context.changeColor("green");
-          }}
-        >
-          绿
-        </button>
-      </div>
-    );
-  }
-}
-```
-
-- 如果是函数组件
-  函数组件需要返回一个`Context.Consumer`，它的 children 是一个函数，函数的参数就是`Provider`的 `value`属性，
+   `Context.Consumer`，它的 children 是一个函数，函数的参数就是`Provider`的 `value`属性，
 
 ```js
 function Context2(props) {
@@ -841,3 +805,60 @@ function Context2(props) {
   );
 }
 ```
+
+如果是类组件：还可以通过给孙子组件添加一个静态属性`contextType`（必须是这个静态属性），指向创建的上下文`ThemeContext`，然后这个组件实例身上会多一个 this.context = Provier 中的 value。我们只需要通过`this.context`来使用`value`中的值即可。
+
+```js
+class Content extends React.Component {
+  static contextType = ThemeContext;
+  render() {
+    return (
+      <div
+        style={{
+          margin: "10px",
+          padding: "5px",
+          border: `5px solid ${this.context.color}`,
+        }}
+      >
+        content
+        <button
+          onClick={() => {
+            this.context.changeColor("red");
+          }}
+        >
+          红
+        </button>
+        <button
+          onClick={() => {
+            this.context.changeColor("green");
+          }}
+        >
+          绿
+        </button>
+      </div>
+    );
+  }
+}
+```
+
+### 6.2 Context 的实现
+
+我们可以发现，实际上`Context`的实现就是用了一个缓存了一个公共的对象`value`，这个对象中有`Provider`和 `Consumer`两个组件，通过这两个组件来传递这个`value`，从而实现数据的共享。
+
+```js
+function createContext() {
+  function Provider(props) {
+    Provider.value = props.value;
+    return this.props.children; // 直接渲染儿子，只是用于缓存value
+  }
+  function Consumer(props) {
+    return props.children(Provider.value);
+  }
+  return {
+    Provider,
+    Consumer,
+  };
+}
+```
+
+如上所示，我们可以发现，我们定义了一个缓存变量`Provider.value`，当然我们也可以直接定义一个变量`value`来作为缓存。
