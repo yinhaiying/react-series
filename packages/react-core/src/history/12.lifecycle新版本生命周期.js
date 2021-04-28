@@ -84,3 +84,23 @@ ReactDOM.render(
 
 
 
+
+
+
+
+
+
+
+/*
+
+1:Counter constructor:构造函数
+index.js:21 2:Counter componentWillMmount:组件将要挂载
+index.js:24 3:Counter render:生成虚拟DOM
+index.js:33 4:Counter componentDidMount:组件挂载完成
+2index.js:36 5:Counter shouleComponentUpdate，询问用户组件是否要更新
+index.js:40 6:Counter componentWillUpdate:组件将要更新
+index.js:24 3:Counter render:生成虚拟DOM
+index.js:43 7:Counter componentDidUpdate:组件更新完成
+
+
+*/

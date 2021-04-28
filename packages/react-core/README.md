@@ -689,3 +689,49 @@ class Counter extends React.Component {
 
 - componentWillUnmount
   `componentWillUnmount`是组件卸载时触发。
+
+### 5.2 新版本的生命周期函数
+
+新版本的生命周期函数和旧版本的生命周期函数主要有两个区别：
+
+1. 删除了原来带有`will`的三个生命周期函数。
+   `UNSAFE_componentWillMount`
+   `UNSAFE_componentWillUpdate`,`componentWillReceiveProps`
+
+2. 新增了两个生命周期函数
+   `getDerivedStateFromProps`
+   `getSnapshotBeforeUpdate`
+
+**getDerivedStateFromProps**
+这是一个静态方法，用于将传过来的 props 映射到 state，也就是说如果我们的组件需要根据传过来的 props 来修改状态时，
+可以使用这个钩子，有点类似于 vue 中的`computed`。
+
+```js
+class SubCounter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      n: 0,
+    };
+  }
+  // nextProps 新的props属性对象 prevState 老的状态state对象
+  static getDerivedStateFromProps(nextProps, prevState) {
+    let { count } = nextProps;
+    return {
+      n: count * 2,
+    };
+  }
+  render() {
+    return (
+      <div>
+        <p>SubCount:{this.state.n}</p>
+      </div>
+    );
+  }
+}
+```
+
+如上代码所示，如果我们需要根据`props`的 number 来修改子组件中的`state`中的`n`。那么我们可以直接使用
+`getDerivedStateFromProps`返回一个对象，对象的属性是新的`state`中的`n`。<br/>
+**getSnapshotBeforeUpdate**
+`getSnapshotBeforeUpdate`被调用于 render 之后，可以读取但是无法使用 DOM 的时候，它使您的组件在可能更改之前从 DOM 捕获一些信息（例如滚动位置）。此生命周期返回的任何值都将作为参数传递给`componentDidUpdate`
