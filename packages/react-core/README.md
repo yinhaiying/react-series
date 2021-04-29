@@ -862,3 +862,133 @@ function createContext() {
 ```
 
 如上所示，我们可以发现，我们定义了一个缓存变量`Provider.value`，当然我们也可以直接定义一个变量`value`来作为缓存。
+
+## 七.高阶组件(highOrderComponent)
+
+- 高阶组件就是一个函数，传给它一个组件，返回一个新的组件。
+- 高阶组件的作用其实就是为了代码之间的复用。
+  高阶组件不是组件，它是一个函数,它传入一个组件，返回一个组件。
+
+### 7.1 高阶组件的使用
+
+如下所示，是一个组件，我们需要统计这个组件挂载所消耗的时间。实现方式如下：
+
+```js
+class Hello extends React.Component {
+  start = null;
+  UNSAFE_componentWillMount() {
+    this.start = Date.now();
+  }
+  componentDidMount() {
+    console.log(Date.now() - this.start);
+  }
+  render() {
+    return <div>hello</div>;
+  }
+}
+```
+
+如果我们想要统计每个组件的挂载时间，那么我们是不是需要在每个组件中都去定义`UNSAFE_componentWillMount`和`componentDidMount`，然后计算相对应的时间，这无疑是非常不合理的。这时候我们就可以通过高阶组件来实现这个功能。
+
+1. 实现一个高阶组件
+   高阶组件是一个函数，它接收一个旧组件，返回新的组件，在新的组件中我们可以实现一些功能，同时通过`render`返回传入的旧的组件。
+
+```js
+// 定义高阶组件的实现
+function withLogger(OldComponent) {
+  return class extends React.Component {
+    start = null;
+    UNSAFE_componentWillMount() {
+      this.start = Date.now();
+    }
+    componentDidMount() {
+      console.log(Date.now() - this.start);
+    }
+    render() {
+      return <OldComponent {...this.props} />;
+    }
+  };
+}
+
+class Hello extends React.Component {
+  render() {
+    return <div>hello,{this.props.id}</div>;
+  }
+}
+```
+
+2. 使用高阶组件
+
+```js
+let NewHello = withLogger(Hello);
+ReactDOM.render(<NewHello id="world" />, document.getElementById("root"));
+```
+
+### 7.2 高阶组件的问题
+
+高阶组件可以实现逻辑的复用，但是如果要复用逻辑比较多的话，就比较难以维护了。也就是说如果嵌套多个高阶组件就会带来问题。
+**受控组件**：input 的 value 值受到状态控制。也就是你写了 value 属性，那么就必须有配套的 change 来控制这个 value 的值的变化。
+**非受控组件**：input 的 value 值不受状态控制。也就是你可以写成`defaultValue`，值的变化不需要你来控制，input 内部自己控制。
+
+```js
+import React from "react"; // React核心库 提供react组件等
+import ReactDOM from "react-dom"; // DOM渲染库
+// import React from './my-react/react';  // React核心库 提供react组件等
+// import ReactDOM from './my-react/react-dom';  // DOM渲染库
+
+const fromLocalStorage = (OldComponent, fieldName) => {
+  return class extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = { value: "" };
+    }
+    componentDidMount() {
+      let value = localStorage.getItem(fieldName);
+      this.setState({ value });
+    }
+    handleChange = (ev) => {
+      this.setState({ value: ev.target.value });
+      localStorage.setItem(fieldName, ev.target.value);
+    };
+    render() {
+      return <OldComponent value={this.state.value} />;
+    }
+  };
+};
+
+const fromAjax = (OldComponent) => {
+  return class extends React.Component {
+    state = { value: "" };
+    componentDidMount() {
+      fetch("/dic.json")
+        .then((res) => res.json())
+        .then((data) => {
+          let value = data[this.props.value]; // value = "张"
+          this.setState({ value });
+        });
+    }
+    render() {
+      return <OldComponent value={this.state.value} />;
+    }
+  };
+};
+
+class Field extends React.Component {
+  render() {
+    return <input defaultValue={this.props.value} />;
+  }
+}
+
+const AjaxUserName = fromAjax(Field); // 高阶组件1
+const LocalUserName = fromLocalStorage(AjaxUserName, "username"); // 高阶组件2
+
+let element = (
+  <>
+    <LocalUserName />,
+  </>
+);
+
+ReactDOM.render(element, document.getElementById("root"));
+```
+
+如上所示，使用了高阶组件`AjaxUserName`和`LocalUserName`，进行了两次包裹，这样的话导致逻辑复杂，反而难以维护了。
