@@ -992,3 +992,139 @@ ReactDOM.render(element, document.getElementById("root"));
 ```
 
 如上所示，使用了高阶组件`AjaxUserName`和`LocalUserName`，进行了两次包裹，这样的话导致逻辑复杂，反而难以维护了。
+
+## 八. render props
+
+- `render prop`是一种在 react 组件之间使用一个值为函数的 prop 共享代码的简单技术。
+- 具有`render prop`的组件接受一个函数，该函数返回一个 react 元素，并调用它，而不是使用自己的渲染逻辑
+- `render prop`是一个用于告知组件需要渲染什么内容的函数 prop。
+- 这也是逻辑复用的一种方式。
+
+如果组件的内容是动态变化的，类似于`Vue`中的`slot`，也就是用户可以通过 slot 来往组件中插入内容，在 react 中没有 slot，那么这种场景应该如何实现了。主要有以下几种方法：
+
+1. 使用 this.children 来进行渲染
+
+```js
+ReactDOM.render(
+  <MouseTraker>
+    <>
+      <p>移动鼠标，记录位置</p>
+      <p>
+        当期鼠标位置：{props.x},{props.y}
+      </p>
+    </>
+  </MouseTraker>,
+  document.getElementById("root")
+);
+```
+
+如上所示，我们在`MouseTraker`组件中间动态地插入了内容，那么我们创建组件时这部分就需要通过`this.children`来进行处理了。
+
+```js
+class MouseTraker extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { x: 0, y: 0 };
+  }
+  handleMouseMove = (event) => {
+    this.setState({
+      x: event.clientX,
+      y: event.clientY,
+    });
+  };
+  render() {
+    return <div onMouseMove={this.handleMouseMove}>{this.children}</div>; // 看这里 看这里
+  }
+}
+```
+
+但是我们可以发现，我们在渲染时需要记录位置，也就是有值的传递的，而`this.children`无法传递值。因此我们需要换一种方式，slot 插槽中的内容可以是一个函数，这个函数返回动态的内容。
+
+```js
+ReactDOM.render(
+  <MouseTraker >
+    {
+      props => {
+        return (
+          <>
+            <p>移动鼠标，记录位置</p>
+            <p>当期鼠标位置：{props.x},{props.y}</p>
+          </>
+        )
+
+      }
+    }
+  </MouseTraker>,
+  document.getElementById('root')
+```
+
+如上所示，我们不再直接返回元素，而是返回一个函数，函数接收 props，这样的话我们就可以传递参数给这个 props 了。
+同理我们需要将`this.children`改成函数调用的形式。
+
+```js
+class MouseTraker extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { x: 0, y: 0 };
+  }
+  handleMouseMove = (event) => {
+    this.setState({
+      x: event.clientX,
+      y: event.clientY,
+    });
+  };
+  render() {
+    return (
+      <div onMouseMove={this.handleMouseMove}>
+        {this.props.children(this.state)}
+      </div>
+    );
+  }
+}
+```
+
+2. 使用 render 来进行渲染。
+   组件支持传入一个`render`属性，这个属性也可以是一个函数。
+
+```js
+ReactDOM.render(
+  <MouseTraker
+    render={(props) => {
+      return (
+        <>
+          <p>移动鼠标，记录位置</p>
+          <p>
+            当期鼠标位置：{props.x},{props.y}
+          </p>
+        </>
+      );
+    }}
+  />,
+
+  document.getElementById("root")
+);
+```
+
+组件定义时使用`this.props.render`来执行函数即可。
+
+```js
+class MouseTraker extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { x: 0, y: 0 };
+  }
+  handleMouseMove = (event) => {
+    this.setState({
+      x: event.clientX,
+      y: event.clientY,
+    });
+  };
+  render() {
+    return (
+      <div onMouseMove={this.handleMouseMove}>
+        {this.props.render(this.state)}
+      </div>
+    );
+  }
+}
+```

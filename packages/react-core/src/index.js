@@ -4,66 +4,64 @@ import ReactDOM from 'react-dom';  // DOM渲染库
 // import ReactDOM from './my-react/react-dom';  // DOM渲染库
 
 
-const fromLocalStorage = (OldComponent, fieldName) => {
-  return class extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = { value: "" }
-    }
-    componentDidMount() {
-      let value = localStorage.getItem(fieldName);
-      this.setState({ value })
-    }
-    handleChange = (ev) => {
-      this.setState({ value: ev.target.value });
-      localStorage.setItem(fieldName, ev.target.value)
-    }
-    render() {
-      return (
-        <OldComponent value={this.state.value} />
-      )
-    }
+class MouseTraker extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { x: 0, y: 0 }
   }
-}
-
-const fromAjax = (OldComponent) => {
-  return class extends React.Component {
-    state = { value: "" };
-    componentDidMount() {
-      fetch("/dic.json").then((res) => res.json()).then((data) => {
-        let value = data[this.props.value];  // value = "张"
-        this.setState({ value })
-      })
-    }
-    render() {
-      return (
-        <OldComponent value={this.state.value} />
-      )
-    }
+  handleMouseMove = (event) => {
+    this.setState({
+      x: event.clientX,
+      y: event.clientY
+    })
   }
-}
-
-
-class Field extends React.Component {
   render() {
     return (
-      <input defaultValue={this.props.value} />
+      <div onMouseMove={this.handleMouseMove}>
+        {this.props.render(this.state)}
+      </div>
     )
   }
 }
 
-const AjaxUserName = fromAjax(Field)
 
-const LocalUserName = fromLocalStorage(AjaxUserName, "username");
+/*
+如果我们不确定组件里面是什么，也就是说组件的children是动态变化的，我们可以使用this.children来进行渲染，如果需要传值，
+那么this.children可以是一个函数。
 
-let element = <>
-  <LocalUserName />,
-</>
-
+方法一：组件的children是一个函数
 ReactDOM.render(
-  element,
+  <MouseTraker >
+    {
+      props => {
+        return (
+          <>
+            <p>移动鼠标，记录位置</p>
+            <p>当期鼠标位置：{props.x},{props.y}</p>
+          </>
+        )
+
+      }
+    }
+  </MouseTraker>,
   document.getElementById('root')
 );
 
 
+*/
+
+ReactDOM.render(
+  <MouseTraker render={
+    props => {
+      return (
+        <>
+          <p>移动鼠标，记录位置</p>
+          <p>当期鼠标位置：{props.x},{props.y}</p>
+        </>
+      )
+    }
+  } />,
+
+  document.getElementById('root')
+);
 
